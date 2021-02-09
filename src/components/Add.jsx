@@ -40,7 +40,7 @@ const Add = () => {
     if (!message.trim()) {
       return;
     }
-    addMessages(user.uid, message);
+    addMessages(user.user.uid, message, user.user.photoURL);
     setMessage("");
   };
 

@@ -13,13 +13,16 @@ import {
   makeStyles,
   Typography,
 } from "@material-ui/core";
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Brightness4Icon from "@material-ui/icons/Brightness4";
 import Brightness7Icon from "@material-ui/icons/Brightness7";
 import LockIcon from "@material-ui/icons/Lock";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
+import SettingsIcon from "@material-ui/icons/Settings";
+import ChatIcon from "@material-ui/icons/Chat";
 import { ChatContext } from "../context/ChatProvider";
 import { ThemeContext } from "../context/ThemeProvider";
+import { NavLink, withRouter } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   card: { maxWidth: "100%" },
@@ -29,10 +32,25 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const MyDrawer = () => {
+const MyDrawer = (props) => {
+  const { history } = props;
+  const pathname = history.location.pathname;
   const classes = useStyles();
   const { user, userLogin, userLogout } = useContext(ChatContext);
   const { themeState, themeChange } = useContext(ThemeContext);
+  const [selectedIndex, setSelectedIndex] = useState(1);
+
+  useEffect(() => {
+    pathname === "/chat"
+      ? setSelectedIndex(1)
+      : pathname === "/settings"
+      ? setSelectedIndex(2)
+      : setSelectedIndex(1);
+  }, [pathname]);
+
+  const handleListItemClick = (e, index) => {
+    setSelectedIndex(index);
+  };
 
   return (
     <Box
@@ -47,7 +65,7 @@ const MyDrawer = () => {
             avatar={
               <Avatar
                 className={classes.large}
-                src={user.active ? user.photoURL : ""}
+                src={user.active ? user.user.photoURL : ""}
                 aria-label="profile-pic"
                 sizes="large"
               />
@@ -60,21 +78,47 @@ const MyDrawer = () => {
           />
           <CardContent>
             <Typography component="p" variant="h6">
-              {user.active ? user.displayName : "User Name"}
+              {user.active ? user.user.displayName : "User Name"}
             </Typography>
             <Typography component="p" variant="caption">
-              {user.active ? user.email : "User Email"}
+              {user.active ? user.user.email : "User Email"}
             </Typography>
           </CardContent>
         </Card>
         <List>
           {user.active ? (
-            <ListItem button onClick={userLogout}>
-              <ListItemIcon>
-                <ExitToAppIcon />
-              </ListItemIcon>
-              <ListItemText primary="Sign Out" />
-            </ListItem>
+            <>
+              <ListItem
+                button
+                component={NavLink}
+                to="/chat"
+                selected={selectedIndex === 1}
+                onClick={(e) => handleListItemClick(e, 1)}
+              >
+                <ListItemIcon>
+                  <ChatIcon />
+                </ListItemIcon>
+                <ListItemText primary="Chat" />
+              </ListItem>
+              <ListItem
+                button
+                component={NavLink}
+                to="/settings"
+                selected={selectedIndex === 2}
+                onClick={(e) => handleListItemClick(e, 2)}
+              >
+                <ListItemIcon>
+                  <SettingsIcon />
+                </ListItemIcon>
+                <ListItemText primary="Settings" />
+              </ListItem>
+              <ListItem button onClick={userLogout}>
+                <ListItemIcon>
+                  <ExitToAppIcon />
+                </ListItemIcon>
+                <ListItemText primary="Sign Out" />
+              </ListItem>
+            </>
           ) : (
             <ListItem button onClick={userLogin}>
               <ListItemIcon>
@@ -104,4 +148,4 @@ const MyDrawer = () => {
   );
 };
 
-export default MyDrawer;
+export default withRouter(MyDrawer);
